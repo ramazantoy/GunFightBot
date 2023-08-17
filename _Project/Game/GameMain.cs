@@ -42,7 +42,6 @@ public class GameMain
         _properties = new GameData();
         _properties.Players = new List<_Project.Player.Player?>();
         _properties.ExtendTime = 33f;
-        //-1001151543952 kurtlar Id
         _properties.TargetPartyId = targetParyId;
         _properties.DebugId = Program.DebugId;
         _properties.SendMessageIds = new List<int>();
