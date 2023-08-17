@@ -89,8 +89,7 @@ public class GameMain
                 {
                     new[]
                     {
-                        InlineKeyboardButton.WithUrl("Katıl",
-                            "https://t.me/gunfightbot?start=" + _properties.GameToken),
+                        InlineKeyboardButton.WithUrl("Katıl", "https://t.me/gunfightbot?start=" + _properties.GameToken),
                     }
                 });
 
