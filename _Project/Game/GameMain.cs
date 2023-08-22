@@ -126,48 +126,56 @@ public class GameMain
         }
         else
         {
-            var user = Program.BotClient!.GetChatMemberAsync(chatId: _properties.TargetPartyId, userId: userId).Result
-                .User;
-
-            string userMention = $"<a href='tg://user?id={userId}'>{user.FirstName}</a> ";
-
-            string message =
-                "Düelloya hazır mısınız? Rakibinizi alt etmek için son şansınız! Kazananın yükselmesi için mücadele edin ve kazanan bir kişi siz olun! \n🏆Bol şanslar! 💪" +
-                $"\nGun Fight {userMention} tarafından başlatıldı. \n  \n Katılmak için tıkla ! ";
-
-            Random r = new Random();
-
-            _properties.GenerateGameToken();
-            var inlineKeyboard = new InlineKeyboardMarkup(new[]
+            try
             {
-                new[]
+                var user = await Program.BotClient!.GetChatMemberAsync(chatId: _properties.TargetPartyId, userId: userId);
+
+                string userMention = $"<a href='tg://user?id={userId}'>{user.User.FirstName}</a> ";
+
+                string message =
+                    "Düelloya hazır mısınız? Rakibinizi alt etmek için son şansınız! Kazananın yükselmesi için mücadele edin ve kazanan bir kişi siz olun! \n🏆Bol şanslar! 💪" +
+                    $"\nGun Fight {userMention} tarafından başlatıldı. \n  \n Katılmak için tıkla ! ";
+
+                Random r = new Random();
+
+                _properties.GenerateGameToken();
+                var inlineKeyboard = new InlineKeyboardMarkup(new[]
                 {
-                    InlineKeyboardButton.WithUrl("Katıl", "https://t.me/gunfightbot?start=" + _properties.GameToken),
-                }
-            });
-            int randomIndex = r.Next(0, _properties.RandomStartGameGifs.Count);
+                    new[]
+                    {
+                        InlineKeyboardButton.WithUrl("Katıl", "https://t.me/gunfightbot?start=" + _properties.GameToken),
+                    }
+                });
+                int randomIndex = r.Next(0, _properties.RandomStartGameGifs.Count);
 
 
-            _properties.GameState = GameState.WaitToPlayers;
+                _properties.GameState = GameState.WaitToPlayers;
 
-            Message sendMessage = await Program.BotClient!.SendAnimationAsync(
-                chatId: _properties.TargetPartyId,
-                animation: InputFile.FromUri(_properties.RandomStartGameGifs[randomIndex]),
-                caption: message,
-                replyMarkup: inlineKeyboard,
-                parseMode: ParseMode.Html,
-                cancellationToken: CancellationToken.None);
+                Message sendMessage = await Program.BotClient!.SendAnimationAsync(
+                    chatId: _properties.TargetPartyId,
+                    animation: InputFile.FromUri(_properties.RandomStartGameGifs[randomIndex]),
+                    caption: message,
+                    replyMarkup: inlineKeyboard,
+                    parseMode: ParseMode.Html,
+                    cancellationToken: CancellationToken.None);
 
-            _properties.SendMessageIds.Add(sendMessage.MessageId);
-
-
-            await FirstPlayerToList();
-
-            await Program.BotClient!.PinChatMessageAsync(_properties.TargetPartyId, sendMessage.MessageId,
-                disableNotification: true);
+                _properties.SendMessageIds.Add(sendMessage.MessageId);
 
 
-            await JoinTheGame(userId, user.FirstName + " " + user.LastName);
+                await FirstPlayerToList();
+
+                await Program.BotClient!.PinChatMessageAsync(_properties.TargetPartyId, sendMessage.MessageId,
+                    disableNotification: true);
+
+
+                await JoinTheGame(userId, user.User.FirstName);
+            }
+            catch (Exception e)
+            {
+                await Program.BotClient!.SendTextMessageAsync(_properties.DebugId, e.Message);
+                
+            }
+       
         }
     }
 
