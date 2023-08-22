@@ -356,11 +356,14 @@ public class GameMain
 
     private async Task DeleteFleeButtons()
     {
-        foreach (_Project.Player.Player player in _properties.Players)
+        foreach (Player.Player? player in _properties.Players)
         {
             try
             {
+                var user = await Program.BotClient!.GetChatMemberAsync(player!.UserId, player.UserId);
+                
                 await Program.BotClient!.DeleteMessageAsync(player.UserId, player.FleeMessageId);
+
             }
             catch (Exception e)
             {
@@ -410,7 +413,7 @@ public class GameMain
         }
         catch (Exception e)
         {
-            Program.BotClient!.SendTextMessageAsync(_properties.DebugId, e.Message);
+           await Program.BotClient!.SendTextMessageAsync(_properties.DebugId, e.Message);
         }
 
         _properties.ExtendTime += time;
@@ -418,8 +421,8 @@ public class GameMain
         {
             _properties.ExtendTime = 300;
         }
-
-        Program.BotClient!.SendTextMessageAsync(_properties.TargetPartyId,
+        
+        await   Program.BotClient!.SendTextMessageAsync(_properties.TargetPartyId,
             "Oyunun süresi " + time + " saniye uzatıldı. Katılmak için " + _properties.ExtendTime + " saniye kaldı.");
     }
 
@@ -561,7 +564,7 @@ public class GameMain
         await Program.BotClient!.SendTextMessageAsync(_properties.TargetPartyId, vsText, parseMode: ParseMode.Html);
     }
 
-    private async Task RemoveDeathPlayers()
+    private Task RemoveDeathPlayers()
     {
         List<int> playersToRemoveIndexes = new List<int>();
 
@@ -569,7 +572,7 @@ public class GameMain
         {
             var player = _properties.Players[i];
 
-            if (player.PlayerState == PlayerState.Afk || player.PlayerState == PlayerState.Death)
+            if (player!.PlayerState == PlayerState.Afk || player.PlayerState == PlayerState.Death)
             {
                 playersToRemoveIndexes.Add(i);
             }
@@ -581,6 +584,8 @@ public class GameMain
             int indexToRemove = playersToRemoveIndexes[i];
             _properties.Players.RemoveAt(indexToRemove);
         }
+
+        return Task.CompletedTask;
     }
 
     private async Task SendDmMessages()
