@@ -26,7 +26,7 @@ class Program
     }
 
 
-    static async Task Main()
+    private static async Task Main()
 
     {
         Console.WriteLine("Gun Fight Beta v1.2 @leonbrave");
@@ -35,11 +35,11 @@ class Program
 
         if (File.Exists(configPath))
         {
-            string[] lines = File.ReadAllLines(configPath);
+            string[] lines = await File.ReadAllLinesAsync(configPath);
 
 
-            string token = GetConfigValue(lines, "TELEGRAM_BOT_TOKEN");
-            _debugId = long.Parse(GetConfigValue(lines, "DEBUG_GROUP_ID"));
+            string? token = GetConfigValue(lines, "TELEGRAM_BOT_TOKEN");
+            _debugId = long.Parse(GetConfigValue(lines, "DEBUG_GROUP_ID")!);
 
             if (!string.IsNullOrEmpty(token) || !string.IsNullOrEmpty(_debugId.ToString()))
             {
@@ -77,11 +77,11 @@ class Program
         }
     }
     
-    static string GetConfigValue(string[] lines, string key)
+    static string? GetConfigValue(string[] lines, string key)
     {
         foreach (string line in lines)
         {
-            string[] parts = line.Split('=');
+            string?[] parts = line.Split('=');
             if (parts.Length == 2 && parts[0] == key)
             {
                 return parts[1];
@@ -125,7 +125,7 @@ class Program
                 {
                     if (textParts.Length <= 1 || !GroupManager.IsEqualAnyToken(textParts[1]))
                     {
-                        await botClient.SendTextMessageAsync(message.From.Id,
+                        await botClient.SendTextMessageAsync(message.From!.Id,
                             "Oyunu oynamak için grupta yer alan katıl butonuna tıklayarak oyuna gelmelisiniz.",
                             cancellationToken: cancellationToken);
                     }
@@ -134,7 +134,7 @@ class Program
                         try
                         {
                             GameMain? mainGame = GroupManager.GetMyGameWithToken(textParts[1]);
-                            await mainGame.JoinTheGame(message.From.Id, message.From.FirstName);
+                            await mainGame!.JoinTheGame(message.From!.Id, message.From.FirstName);
                         }
                         catch (Exception e)
                         {
@@ -145,7 +145,7 @@ class Program
                 }
                 else if (command.Equals("/help"))
                 {
-                    await botClient.SendTextMessageAsync(message.From.Id,
+                    await botClient.SendTextMessageAsync(message.From!.Id,
                         "Merhaba! Ben, Silahşör Oyun Botu, heyecan dolu bir silahşör turnuvasının anahtar parçasıyım. Oyuncuları bir araya getirerek, ateşli çatışmaların ve stratejik hamlelerin hakim olduğu bu turnuvada eğlence dolu anlar yaşatıyorum." +
                         "\nNasıl Oynanır?" +
                         "\nOyunda amacınız, rakiplerinize karşı üstünlük sağlayarak son turun galibi olmaktır." +
@@ -177,7 +177,7 @@ class Program
             else if (command == "/forcestart" || command == "/forcestart@gunfightbot")
             {
                 GameMain gameMain = await GroupManager.GetMyGame(message.Chat.Id);
-                bool isAdmin = await gameMain.IsAdmin(message.From.Id);
+                bool isAdmin = await gameMain.IsAdmin(message.From!.Id);
                 if (isAdmin)
                 {
                     await gameMain.RunGame();
